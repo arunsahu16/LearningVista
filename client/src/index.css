@@ -199,3 +199,100 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(262, 83%, 52%);
 }
+
+/* Responsive design utilities */
+@media (max-width: 768px) {
+  .hero-gradient {
+    padding: 3rem 0;
+  }
+  
+  .gradient-text {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  .card-hover {
+    transform: none;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px);
+  }
+  
+  .sliding-content {
+    animation-duration: 20s;
+  }
+}
+
+@media (max-width: 640px) {
+  .gradient-text {
+    font-size: 2rem;
+  }
+  
+  .trending-gradient {
+    padding: 2rem;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+/* Mobile-specific animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up,
+  .animate-slide-down,
+  .animate-fade-in,
+  .animate-float,
+  .sliding-content {
+    animation: none;
+  }
+  
+  .card-hover:hover {
+    transform: none;
+  }
+}
+
+/* Touch-friendly sizing */
+@media (hover: none) and (pointer: coarse) {
+  .card-hover {
+    transform: none;
+  }
+  
+  .card-hover:active {
+    transform: scale(0.98);
+  }
+  
+  .btn-gradient:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Slider styling for learning path */
+.slider {
+  appearance: none;
+  background: linear-gradient(90deg, hsl(262, 83%, 58%), hsl(207, 90%, 54%));
+  outline: none;
+  border-radius: 8px;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid hsl(262, 83%, 58%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid hsl(262, 83%, 58%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}

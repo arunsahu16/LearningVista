@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { CloudUpload, X } from "lucide-react";
+import { CloudUpload, X, Eye } from "lucide-react";
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import ProjectAnalysisModal from "@/components/project-analysis-modal";
+import type { Project } from "@shared/schema";
 
 interface UploadModalProps {
   open: boolean;
@@ -19,6 +21,8 @@ export default function UploadModal({ open, onOpenChange }: UploadModalProps) {
   const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [uploadedProject, setUploadedProject] = useState<Project | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -34,13 +38,27 @@ export default function UploadModal({ open, onOpenChange }: UploadModalProps) {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (project: Project) => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects/my'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       toast({
         title: "Success!",
         description: "Your project has been uploaded successfully.",
+        action: (
+          <Button 
+            size="sm" 
+            onClick={() => {
+              setUploadedProject(project);
+              setShowAnalysisModal(true);
+            }}
+            className="btn-gradient text-white"
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            Analyze
+          </Button>
+        ),
       });
+      setUploadedProject(project);
       resetForm();
       onOpenChange(false);
     },
@@ -116,16 +134,17 @@ export default function UploadModal({ open, onOpenChange }: UploadModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            Upload New Project
-            <Button variant="ghost" size="icon" onClick={handleClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              Upload New Project
+              <Button variant="ghost" size="icon" onClick={handleClose}>
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -209,5 +228,12 @@ export default function UploadModal({ open, onOpenChange }: UploadModalProps) {
         </form>
       </DialogContent>
     </Dialog>
+
+      <ProjectAnalysisModal
+        open={showAnalysisModal}
+        onOpenChange={setShowAnalysisModal}
+        project={uploadedProject}
+      />
+    </>
   );
 }

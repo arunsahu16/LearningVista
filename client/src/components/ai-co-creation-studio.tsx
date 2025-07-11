@@ -1,8 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Plus, Palette, Wand2, Crop, Type } from "lucide-react";
+import { Heart, Plus, Palette, Wand2, Crop, Type, Eye, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import ProjectAnalysisModal from "@/components/project-analysis-modal";
 import type { Project } from "@shared/schema";
 
 interface AICoCreationStudioProps {
@@ -10,9 +12,17 @@ interface AICoCreationStudioProps {
 }
 
 export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudioProps) {
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['/api/projects/my'],
   });
+
+  const handleAnalyzeProject = (project: Project) => {
+    setSelectedProject(project);
+    setShowAnalysisModal(true);
+  };
 
   const aiTools = [
     { icon: Palette, title: "Color Generator", description: "AI-powered palette creation", color: "purple" },
@@ -57,11 +67,21 @@ export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudio
                 alt={project.title || "Project"} 
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <Button
+                  size="sm"
+                  onClick={() => handleAnalyzeProject(project)}
+                  className="btn-gradient text-white shadow-lg"
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  Analyze
+                </Button>
+              </div>
             </div>
             <CardContent className="p-4">
               <h3 className="font-semibold text-gray-900 mb-2">{project.title}</h3>
               <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <Badge 
                   variant="secondary" 
                   className={`text-xs bg-${getCategoryColor(project.category || "")}-100 text-${getCategoryColor(project.category || "")}-800`}
@@ -73,6 +93,15 @@ export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudio
                   <span>{project.likes}</span>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAnalyzeProject(project)}
+                className="w-full text-purple-600 hover:text-purple-800 border-purple-200 hover:border-purple-400"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Get AI Feedback
+              </Button>
             </CardContent>
           </Card>
         ))}
@@ -95,6 +124,12 @@ export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudio
           ))}
         </div>
       </div>
+
+      <ProjectAnalysisModal
+        open={showAnalysisModal}
+        onOpenChange={setShowAnalysisModal}
+        project={selectedProject}
+      />
     </section>
   );
 }

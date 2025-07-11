@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Play, Lightbulb, Users, Trophy, Medal, Star } from "lucide-react";
+import { TrendingUp, Play, Lightbulb, Users, Trophy, Medal, Star, Route } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import type { LearningProgress } from "@shared/schema";
 
 export default function LearningJourney() {
@@ -24,11 +25,22 @@ export default function LearningJourney() {
 
   return (
     <section className="animate-slide-up">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Your Learning Journey</h2>
-        <Button variant="link" className="text-purple-600 hover:text-purple-800 font-medium">
-          View All
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">Your Learning Journey</h2>
+          <p className="text-gray-600 mt-1">Track your progress and discover new skills</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href="/learning-path">
+            <Button className="btn-gradient text-white">
+              <Route className="w-4 h-4 mr-2" />
+              Create Learning Path
+            </Button>
+          </Link>
+          <Button variant="outline" className="text-purple-600 hover:text-purple-800 font-medium">
+            View All
+          </Button>
+        </div>
       </div>
       
       <div className="grid md:grid-cols-3 gap-8">
