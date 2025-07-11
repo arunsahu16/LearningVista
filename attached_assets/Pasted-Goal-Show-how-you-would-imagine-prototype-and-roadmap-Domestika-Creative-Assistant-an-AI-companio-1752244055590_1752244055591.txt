@@ -1,0 +1,41 @@
+Goal: Show how you would imagine, prototype, and roadmap Domestika Creative Assistant—an AI companion that helps millions of creatives learn faster, practice better, and share more confidently.
+
+1 — Context
+Domestika’s community thrives on observe → practice → share loops.
+Within the next year, LLM-powered agents will become the primary interface for discovery, mentoring, feedback, and even Hollywood-quality content generation. Your job is to design a Creative Assistant that:
+Guides learners through personalised skill journeys.
+Elevates practice with intelligent feedback and AI co-creation.
+Strengthens community ties by surfacing the right peers and masters at the right moment.
+
+2 — Your Deliverables
+
+A
+Near-Working Prototype
+Demonstrate at least two core user flows end-to-end (see §3).
+Lovable app, Replit project, Bolt flow, Claude prompt chain, or any stack you control.
+B
+Strategy & Roadmap Deck/ doc
+Explain the “why”, “what”, and “how” behind your product choices.
+Google Slides, Notion, Gamma, Tome, or similar.
+C
+Metrics & Ops Sheet
+Show how you’ll measure success and run product ops at scale.
+Google Sheet, Airtable, or lightweight dashboard mock.
+Tip: Fidelity matters less than clarity—stub APIs or record a guided demo if needed.
+
+
+3 — Strategy & Roadmap Deck (suggested outline)
+Problem & JTBD – what core learner pain points does the assistant solve?
+Market & TAM – who benefits, how big is the opportunity, and why now?
+Solution Architecture – system diagram showing agents, content pipeline, data loops, and moderation.
+Roadmap 0-6-12 months – sequenced bets, resourcing assumptions, and kill-switch criteria.
+Prioritisation Framework – show how you’d score initiatives (e.g., RICE, MoAR).
+Risks & Mitigations – technical, ethical, and community health considerations.
+Stakeholder Plan – touchpoints with Content, Marketing, Trust & Safety, and Execs.
+
+4 — Metrics & Ops Sheet
+Include:
+North-Star Metric (e.g., Weekly Creative Actions per Learner).
+Guardrails (e.g., content safety violations, feedback latency).
+Leading Indicators for each roadmap phase.
+Ritual Calendar – sprint cadence, async status updates, post-launch A/B test cycles.
