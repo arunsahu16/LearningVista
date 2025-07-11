@@ -22,10 +22,16 @@ export default function Home() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
           <LearningJourney />
-          <AICoCreationStudio onUploadClick={() => setShowUploadModal(true)} />
-          <AIAssistantChat />
+          <div id="ai-studio">
+            <AICoCreationStudio onUploadClick={() => setShowUploadModal(true)} />
+          </div>
+          <div id="ai-assistant">
+            <AIAssistantChat />
+          </div>
           <TrendingTopics />
-          <CommunityHighlights />
+          <div id="community">
+            <CommunityHighlights />
+          </div>
         </div>
       </main>
 
@@ -35,6 +41,9 @@ export default function Home() {
           size="lg"
           className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl btn-gradient animate-float"
           title="Quick AI Help"
+          onClick={() => {
+            document.getElementById('ai-assistant')?.scrollIntoView({ behavior: 'smooth' });
+          }}
         >
           <Bot className="w-6 h-6" />
         </Button>

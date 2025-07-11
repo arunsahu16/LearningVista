@@ -3,13 +3,45 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Crown, Star, Rocket } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
+import { useState } from "react";
 
 export default function CommunityHighlights() {
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const { data: topCreators = [] } = useQuery<User[]>({
     queryKey: ['/api/community/creators'],
   });
+
+  const likeMutation = useMutation({
+    mutationFn: async (projectId: number) => {
+      const response = await apiRequest("POST", `/api/projects/${projectId}/like`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Liked!",
+        description: "Thanks for showing your support!",
+      });
+    },
+  });
+
+  const handleLike = (postId: number) => {
+    const newLikedPosts = new Set(likedPosts);
+    if (likedPosts.has(postId)) {
+      newLikedPosts.delete(postId);
+    } else {
+      newLikedPosts.add(postId);
+    }
+    setLikedPosts(newLikedPosts);
+    likeMutation.mutate(postId);
+  };
 
   const getBadgeIcon = (badgeLevel: string) => {
     switch (badgeLevel) {
@@ -40,6 +72,8 @@ export default function CommunityHighlights() {
       bio: "Just completed an amazing piece exploring color psychology in digital art. The AI feedback helped me refine the emotional impact!",
       likes: 156,
       comments: 23,
+      projectImage: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
+      projectTitle: "Color Psychology Study"
     },
     {
       id: 2,
@@ -51,6 +85,8 @@ export default function CommunityHighlights() {
       bio: "Loving the new AI-powered user journey mapping tool! It's helping me create more intuitive interfaces faster than ever.",
       likes: 89,
       comments: 12,
+      projectImage: "https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=400&h=300&fit=crop",
+      projectTitle: "Mobile Banking App"
     },
     {
       id: 3,
@@ -62,6 +98,8 @@ export default function CommunityHighlights() {
       bio: "The AI collaboration feature is a game-changer! Just launched a brand identity that perfectly captures the client's vision.",
       likes: 67,
       comments: 8,
+      projectImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop",
+      projectTitle: "Sustainable Fashion Brand"
     },
   ];
 
@@ -98,7 +136,19 @@ export default function CommunityHighlights() {
           const BadgeIcon = getBadgeIcon(creator.badgeLevel);
           return (
             <Card key={creator.id} className="shadow-lg card-hover overflow-hidden">
-              <div className="h-32 bg-gradient-to-br from-purple-100 to-blue-100"></div>
+              <div className="h-48 relative overflow-hidden">
+                <img 
+                  src={creator.projectImage} 
+                  alt={creator.projectTitle}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2">
+                  <Badge className={`bg-gradient-to-r ${getBadgeColor(creator.badgeLevel)} text-white text-xs border-0`}>
+                    <BadgeIcon className="w-3 h-3 mr-1" />
+                    {creator.badgeLevel}
+                  </Badge>
+                </div>
+              </div>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
@@ -111,23 +161,25 @@ export default function CommunityHighlights() {
                       <p className="text-xs text-gray-600">{creator.specialty}</p>
                     </div>
                   </div>
-                  <Badge className={`bg-gradient-to-r ${getBadgeColor(creator.badgeLevel)} text-white text-xs border-0`}>
-                    <BadgeIcon className="w-3 h-3 mr-1" />
-                    {creator.badgeLevel}
-                  </Badge>
                 </div>
+                <h4 className="font-medium text-gray-900 mb-2">{creator.projectTitle}</h4>
                 <p className="text-sm text-gray-600 mb-3">"{creator.bio}"</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <span>{creator.followers.toLocaleString()} followers</span>
                   <div className="flex space-x-3">
-                    <span className="flex items-center">
-                      <Heart className="w-4 h-4 mr-1" />
-                      {creator.likes}
-                    </span>
-                    <span className="flex items-center">
+                    <button 
+                      onClick={() => handleLike(creator.id)}
+                      className={`flex items-center transition-colors ${
+                        likedPosts.has(creator.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart className={`w-4 h-4 mr-1 ${likedPosts.has(creator.id) ? 'fill-current' : ''}`} />
+                      {creator.likes + (likedPosts.has(creator.id) ? 1 : 0)}
+                    </button>
+                    <button className="flex items-center text-gray-500 hover:text-blue-500 transition-colors">
                       <MessageCircle className="w-4 h-4 mr-1" />
                       {creator.comments}
-                    </span>
+                    </button>
                   </div>
                 </div>
               </CardContent>
