@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Crown, Star, Rocket } from "lucide-react";
+import { Heart, MessageCircle, Crown, Star, Rocket, Bookmark } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -11,11 +11,14 @@ import { useState } from "react";
 
 export default function CommunityHighlights() {
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
+  const [savedPosts, setSavedPosts] = useState<Set<number>>(new Set());
+  const [filter, setFilter] = useState<string>("All");
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const { data: topCreators = [] } = useQuery<User[]>({
-    queryKey: ['/api/community/creators'],
+    queryKey: ["/api/community/creators"],
   });
 
   const likeMutation = useMutation({
@@ -24,23 +27,23 @@ export default function CommunityHighlights() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Liked!",
-        description: "Thanks for showing your support!",
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      toast({ title: "Liked!", description: "Thanks for showing your support!" });
     },
   });
 
   const handleLike = (postId: number) => {
     const newLikedPosts = new Set(likedPosts);
-    if (likedPosts.has(postId)) {
-      newLikedPosts.delete(postId);
-    } else {
-      newLikedPosts.add(postId);
-    }
+    newLikedPosts.has(postId) ? newLikedPosts.delete(postId) : newLikedPosts.add(postId);
     setLikedPosts(newLikedPosts);
     likeMutation.mutate(postId);
+  };
+
+  const handleSave = (postId: number) => {
+    const newSavedPosts = new Set(savedPosts);
+    newSavedPosts.has(postId) ? newSavedPosts.delete(postId) : newSavedPosts.add(postId);
+    setSavedPosts(newSavedPosts);
+    toast({ title: "Saved to Inspiration!", description: "Find it in your board later." });
   };
 
   const getBadgeIcon = (badgeLevel: string) => {
@@ -66,120 +69,122 @@ export default function CommunityHighlights() {
       id: 1,
       name: "Sarah Chen",
       specialty: "Digital Illustrator",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?auto=format&fit=crop&w=40&h=40",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c",
       badgeLevel: "Master",
       followers: 2100,
-      bio: "Just completed an amazing piece exploring color psychology in digital art. The AI feedback helped me refine the emotional impact!",
+      bio: "Explored color psychology in art. AI helped refine emotional tone!",
       likes: 156,
       comments: 23,
-      projectImage: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
-      projectTitle: "Color Psychology Study"
+      projectImage: "https://images.unsplash.com/photo-1541961017774-22349e4a1262",
+      projectTitle: "Color Psychology Study",
+      aiInsight: "AI suggested 3 layouts & 5 palettes for emotional impact."
     },
     {
       id: 2,
       name: "Alex Rivera",
       specialty: "UX Designer",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=40&h=40",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
       badgeLevel: "Expert",
       followers: 987,
-      bio: "Loving the new AI-powered user journey mapping tool! It's helping me create more intuitive interfaces faster than ever.",
+      bio: "AI journey mapping tool helps create intuitive UX faster.",
       likes: 89,
       comments: 12,
-      projectImage: "https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=400&h=300&fit=crop",
-      projectTitle: "Mobile Banking App"
+      projectImage: "https://images.unsplash.com/photo-1559028006-448665bd7c7f",
+      projectTitle: "Mobile Banking App",
+      aiInsight: "Used AI flow suggestions and usability predictions."
     },
     {
       id: 3,
       name: "Emma Thompson",
       specialty: "Brand Designer",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=40&h=40",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
       badgeLevel: "Rising",
       followers: 543,
-      bio: "The AI collaboration feature is a game-changer! Just launched a brand identity that perfectly captures the client's vision.",
+      bio: "Launched identity capturing client vision via AI co-creation.",
       likes: 67,
       comments: 8,
-      projectImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop",
-      projectTitle: "Sustainable Fashion Brand"
+      projectImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5",
+      projectTitle: "Sustainable Fashion Brand",
+      aiInsight: "AI offered naming concepts and visual consistency checks."
     },
   ];
 
   const liveUpdates = [
-    { user: "@sarah_designs", message: "Just got amazing feedback on my latest illustration! 🎨" },
-    { user: "@alexux", message: "The AI helped me optimize my user flow - incredible results! 🚀" },
-    { user: "@emma_brands", message: "Collaboration feature is next level! Thanks for the inspiration ✨" },
-    { user: "@mike_motion", message: "AI motion suggestions saved me hours of work today! 🎬" },
+    { user: "@sarah_designs", message: "Got amazing feedback on my latest work! 🎨" },
+    { user: "@alexux", message: "AI optimized my UX flows — mind blown! 🚀" },
+    { user: "@emma_brands", message: "Love the AI collab features 💫" },
+    { user: "@mike_motion", message: "AI motion ideas saved hours today! 🎬" },
   ];
 
   return (
-    <section className="animate-slide-up">
-      <div className="flex justify-between items-center mb-8">
+    <section className="animate-slide-up px-4 md:px-8 py-10 bg-gradient-to-br from-[#1c1c3a] via-[#2a2a4d] to-[#0c0c1e] text-white">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Community Highlights</h2>
-          <p className="text-gray-600 mt-2">Discover amazing work from our creative community</p>
+          <h2 className="text-4xl font-extrabold text-white">Community Highlights</h2>
+          <p className="text-gray-300 mt-2">Discover amazing work from our creative community</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="link" className="text-purple-600 hover:text-purple-800 font-medium">
-            All
-          </Button>
-          <Button variant="link" className="text-gray-500 hover:text-purple-600">
-            Featured
-          </Button>
-          <Button variant="link" className="text-gray-500 hover:text-purple-600">
-            Rising
-          </Button>
+          {['All', 'UX Designer', 'Digital Illustrator', 'Brand Designer'].map(cat => (
+            <Button
+              key={cat}
+              variant={filter === cat ? "secondary" : "ghost"}
+              className="text-sm"
+              onClick={() => setFilter(cat)}
+            >
+              {cat}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {/* Badge Creator Showcase */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {mockCreators.map((creator) => {
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        {mockCreators.filter(c => filter === "All" || c.specialty === filter).map((creator) => {
           const BadgeIcon = getBadgeIcon(creator.badgeLevel);
           return (
-            <Card key={creator.id} className="shadow-lg card-hover overflow-hidden">
-              <div className="h-48 relative overflow-hidden">
-                <img 
-                  src={creator.projectImage} 
-                  alt={creator.projectTitle}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 right-2">
-                  <Badge className={`bg-gradient-to-r ${getBadgeColor(creator.badgeLevel)} text-white text-xs border-0`}>
+            <Card
+              key={creator.id}
+              className="bg-[#12122a] border border-gray-700 shadow-lg hover:scale-[1.02] transition-transform duration-300 overflow-hidden"
+            >
+              <div className="relative h-52 overflow-hidden">
+                <img src={creator.projectImage} alt={creator.projectTitle} className="w-full h-full object-cover" />
+                <div className="absolute top-2 right-2 z-10">
+                  <Badge className={`bg-gradient-to-r ${getBadgeColor(creator.badgeLevel)} text-white text-xs font-semibold border-none shadow-md`}>
                     <BadgeIcon className="w-3 h-3 mr-1" />
                     {creator.badgeLevel}
                   </Badge>
                 </div>
               </div>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <Avatar className="w-8 h-8 mr-2">
-                      <AvatarImage src={creator.avatar} alt={creator.name} />
-                      <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{creator.name}</h3>
-                      <p className="text-xs text-gray-600">{creator.specialty}</p>
-                    </div>
+              <CardContent className="p-5">
+                <div className="flex items-center mb-4">
+                  <Avatar className="w-10 h-10 mr-3">
+                    <AvatarImage src={creator.avatar} />
+                    <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold text-white">{creator.name}</h3>
+                    <p className="text-xs text-gray-400">{creator.specialty}</p>
                   </div>
+                  <Button size="icon" variant="ghost" className="ml-auto" onClick={() => handleSave(creator.id)}>
+                    <Bookmark className={`w-4 h-4 ${savedPosts.has(creator.id) ? "text-yellow-400" : "text-gray-400"}`} />
+                  </Button>
                 </div>
-                <h4 className="font-medium text-gray-900 mb-2">{creator.projectTitle}</h4>
-                <p className="text-sm text-gray-600 mb-3">"{creator.bio}"</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
+                <h4 className="text-lg font-medium text-white mb-1">{creator.projectTitle}</h4>
+                <p className="text-sm text-gray-300 italic mb-2">"{creator.bio}"</p>
+                <p className="text-xs text-blue-400 mb-4">💡 {creator.aiInsight}</p>
+                <div className="flex items-center justify-between text-sm text-gray-400">
                   <span>{creator.followers.toLocaleString()} followers</span>
-                  <div className="flex space-x-3">
-                    <button 
+                  <div className="flex items-center space-x-4">
+                    <button
                       onClick={() => handleLike(creator.id)}
-                      className={`flex items-center transition-colors ${
-                        likedPosts.has(creator.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                      }`}
+                      className={`flex items-center ${likedPosts.has(creator.id) ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-colors`}
                     >
-                      <Heart className={`w-4 h-4 mr-1 ${likedPosts.has(creator.id) ? 'fill-current' : ''}`} />
+                      <Heart className={`w-4 h-4 mr-1 ${likedPosts.has(creator.id) ? "fill-current" : ""}`} />
                       {creator.likes + (likedPosts.has(creator.id) ? 1 : 0)}
                     </button>
-                    <button className="flex items-center text-gray-500 hover:text-blue-500 transition-colors">
+                    <div className="flex items-center text-gray-400 hover:text-blue-400 transition">
                       <MessageCircle className="w-4 h-4 mr-1" />
                       {creator.comments}
-                    </button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -188,16 +193,15 @@ export default function CommunityHighlights() {
         })}
       </div>
 
-      {/* Sliding Comments/Updates */}
-      <div className="bg-gray-100 rounded-2xl p-6 overflow-hidden">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Live Community Updates</h3>
-        <div className="relative h-16 overflow-hidden">
-          <div className="sliding-content whitespace-nowrap">
+      <div className="bg-[#191932] p-6 shadow-inner">
+        <h3 className="text-2xl font-semibold text-white mb-4">Live Community Updates</h3>
+        <div className="overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-purple-500">
+          <div className="flex space-x-6 animate-slide-horizontal">
             {liveUpdates.map((update, index) => (
-              <span key={index} className="inline-block mr-8 bg-white rounded-lg px-4 py-2 shadow-sm">
-                <strong className="text-purple-600">{update.user}:</strong> 
-                <span className="ml-1">{update.message}</span>
-              </span>
+              <div key={index} className="bg-[#23234a] text-white px-4 py-2 shadow-sm">
+                <strong className="text-purple-400">{update.user}:</strong>
+                <span className="ml-2">{update.message}</span>
+              </div>
             ))}
           </div>
         </div>

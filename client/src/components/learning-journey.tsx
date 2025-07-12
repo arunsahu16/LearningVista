@@ -1,111 +1,150 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Play, Lightbulb, Users, Trophy, Medal, Star, Route } from "lucide-react";
+import {
+  TrendingUp,
+  Play,
+  Lightbulb,
+  Users,
+  Trophy,
+  Medal,
+  Star,
+  Route,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import type { LearningProgress } from "@shared/schema";
+import { useInView } from "react-intersection-observer";
+import { motion } from "framer-motion";
 
 export default function LearningJourney() {
   const { data: learningProgress = [] } = useQuery<LearningProgress[]>({
-    queryKey: ['/api/learning-progress'],
+    queryKey: ["/api/learning-progress"],
   });
 
   const quickActions = [
     { icon: Play, label: "Continue Last Course", color: "purple" },
     { icon: Lightbulb, label: "AI Skill Assessment", color: "blue" },
-    { icon: Users, label: "Join Study Group", color: "teal" },
+    { icon: Users, label: "Join Study Group", color: "green" },
   ];
 
   const achievements = [
-    { icon: Trophy, label: "Course Completed", description: "Digital Painting Basics", color: "yellow" },
-    { icon: Medal, label: "Skill Badge Earned", description: "Color Theory Master", color: "green" },
-    { icon: Star, label: "Community Recognition", description: "Top Creator This Month", color: "purple" },
+    {
+      icon: Trophy,
+      label: "Course Completed",
+      description: "Digital Painting Basics",
+      color: "yellow",
+    },
+    {
+      icon: Medal,
+      label: "Skill Badge Earned",
+      description: "Color Theory Master",
+      color: "green",
+    },
+    {
+      icon: Star,
+      label: "Community Recognition",
+      description: "Top Creator This Month",
+      color: "purple",
+    },
   ];
 
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
   return (
-    <section className="animate-slide-up">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Your Learning Journey</h2>
-          <p className="text-gray-600 mt-1">Track your progress and discover new skills</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link href="/learning-path">
-            <Button className="btn-gradient text-white">
-              <Route className="w-4 h-4 mr-2" />
-              Create Learning Path
+    <motion.section
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8 }}
+      className="relative w-full py-20 px-6 bg-gradient-to-br from-[#2e026d] via-[#7e22ce] to-[#ec4899] text-white overflow-hidden"
+    >
+      {/* Dark film overlay */}
+      <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+          <div>
+            <h2 className="text-4xl font-extrabold text-white">Your Learning Journey</h2>
+            <p className="text-purple-100 mt-2 text-lg">
+              Track your progress and discover new skills
+            </p>
+          </div>
+          <div className="flex gap-4 flex-wrap">
+            <Link href="/learning-path">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition">
+                <Route className="w-5 h-5 mr-2" />
+                Create Learning Path
+              </Button>
+            </Link>
+            <Button className="bg-white text-purple-700 px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-gray-100 transition">
+              View All
             </Button>
-          </Link>
-          <Button variant="outline" className="text-purple-600 hover:text-purple-800 font-medium">
-            View All
-          </Button>
+          </div>
         </div>
-      </div>
-      
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Progress Card */}
-        <Card className="shadow-lg card-hover">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+
+        {/* Cards */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Progress Card */}
+          <div className="bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl p-6 shadow-lg">
+            <h3 className="text-xl font-bold mb-4 flex justify-between items-center">
               <span>Overall Progress</span>
-              <div className="w-12 h-12 btn-gradient rounded-full flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
             {learningProgress.map((skill) => (
-              <div key={skill.id}>
-                <div className="flex justify-between text-sm mb-2">
+              <div key={skill.id} className="mb-4">
+                <div className="flex justify-between text-sm mb-1">
                   <span>{skill.skillName}</span>
                   <span>{skill.progress}%</span>
                 </div>
-                <Progress value={skill.progress} className="h-2" />
+                <Progress value={skill.progress} className="h-2 bg-white/20" />
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Quick Actions */}
-        <Card className="shadow-lg card-hover">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {quickActions.map((action, index) => (
-              <Button 
-                key={index}
-                variant="ghost" 
-                className={`w-full text-left p-3 rounded-lg bg-${action.color}-50 hover:bg-${action.color}-100 transition-colors flex items-center`}
-              >
-                <action.icon className={`text-${action.color}-600 mr-3 w-5 h-5`} />
-                <span>{action.label}</span>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+          {/* Quick Actions */}
+          <div className="bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl p-6 shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              {quickActions.map((action, i) => (
+                <button
+                  key={i}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-${action.color}-300 hover:bg-white/20 transition`}
+                >
+                  <action.icon className={`w-5 h-5 text-${action.color}-400`} />
+                  <span>{action.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* Recent Achievements */}
-        <Card className="shadow-lg card-hover">
-          <CardHeader>
-            <CardTitle>Recent Achievements</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="flex items-center">
-                <div className={`w-10 h-10 bg-${achievement.color}-100 rounded-full flex items-center justify-center mr-3`}>
-                  <achievement.icon className={`text-${achievement.color}-600 w-5 h-5`} />
+          {/* Achievements */}
+          <div className="bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl p-6 shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Recent Achievements</h3>
+            <div className="space-y-4">
+              {achievements.map((ach, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-full bg-${ach.color}-100`}>
+                    <ach.icon className={`w-5 h-5 text-${ach.color}-600`} />
+                  </div>
+                  <div>
+                    <p className="font-medium">{ach.label}</p>
+                    <p className="text-sm text-purple-100">{ach.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">{achievement.label}</p>
-                  <p className="text-sm text-gray-600">{achievement.description}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
+
+

@@ -20,7 +20,7 @@ export default function Home() {
       <main>
         <HeroSection />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        <div>
           <LearningJourney />
           <div id="ai-studio">
             <AICoCreationStudio onUploadClick={() => setShowUploadModal(true)} />

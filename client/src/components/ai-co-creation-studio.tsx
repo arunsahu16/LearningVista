@@ -2,10 +2,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Plus, Palette, Wand2, Crop, Type, Eye, BarChart3 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useRef } from "react";
 import ProjectAnalysisModal from "@/components/project-analysis-modal";
 import type { Project } from "@shared/schema";
+import { motion, useInView } from "framer-motion";
 
 interface AICoCreationStudioProps {
   onUploadClick: () => void;
@@ -14,7 +15,8 @@ interface AICoCreationStudioProps {
 export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudioProps) {
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  
+  const queryClient = useQueryClient();
+
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['/api/projects/my'],
   });
@@ -31,94 +33,110 @@ export default function AICoCreationStudio({ onUploadClick }: AICoCreationStudio
     { icon: Type, title: "Text Generator", description: "Creative copy suggestions", color: "yellow" },
   ];
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      "Digital Art": "purple",
-      "Web Design": "blue",
-      "Branding": "teal",
-      "Photography": "green",
-    };
-    return colors[category as keyof typeof colors] || "gray";
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: false });
+
+  const cardVariants = {
+    hiddenLeft: { opacity: 0, x: -100 },
+    hiddenRight: { opacity: 0, x: 100 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
+    exitLeft: { opacity: 0, x: -100, transition: { duration: 0.5 } },
+    exitRight: { opacity: 0, x: 100, transition: { duration: 0.5 } },
   };
 
   return (
-    <section className="animate-slide-up">
-      <div className="flex justify-between items-center mb-8">
+    <section ref={ref} className="min-h-screen w-full px-6 md:px-16 py-12 bg-gradient-to-br from-[#0c0c1e] via-[#1c1c3a] to-[#2a2a4d] text-white">
+      <div className="flex justify-between items-center mb-12">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">AI Co-Creation Studio</h2>
-          <p className="text-gray-600 mt-2">Collaborate with AI to enhance your creative projects</p>
+          <h2 className="text-4xl font-bold">AI Co-Creation Studio</h2>
+          <p className="text-gray-300 mt-2">Collaborate with AI to enhance your creative projects</p>
         </div>
-        <Button 
+        <motion.button 
           onClick={onUploadClick}
-          className="btn-gradient text-white px-6 py-3 hover:shadow-lg transition-all duration-300"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <Plus className="w-5 h-5 mr-2" />
-          New Project
-        </Button>
+          <Plus className="w-5 h-5" /> New Project
+        </motion.button>
       </div>
 
-      {/* Recent Work Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {projects.slice(0, 3).map((project) => (
-          <Card key={project.id} className="shadow-lg card-hover group overflow-hidden">
-            <div className="relative">
-              <img 
-                src={project.imageUrl || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=400&h=300"} 
-                alt={project.title || "Project"} 
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className="flex flex-col md:flex-row gap-6 justify-center mb-16">
+        {projects.slice(0, 3).map((project, index) => (
+          <motion.div
+            key={project.id}
+            initial={index === 0 ? "hiddenLeft" : index === 2 ? "hiddenRight" : "hiddenLeft"}
+            animate={isInView ? "visible" : index === 0 ? "exitLeft" : index === 2 ? "exitRight" : "exitLeft"}
+            variants={cardVariants}
+          >
+            <Card className="bg-[#12122a] border border-gray-700 rounded-xl shadow-xl">
+              <div className="relative">
+                <img 
+                  src={project.imageUrl || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=400&h=300"} 
+                  alt={project.title || "Project"} 
+                  className="w-full h-48 object-cover rounded-t-xl"
+                />
+                <div className="absolute top-2 right-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleAnalyzeProject(project)}
+                    className="bg-purple-500 hover:bg-purple-600 text-white"
+                  >
+                    <Eye className="w-4 h-4 mr-1" /> Analyze
+                  </Button>
+                </div>
+              </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-white text-lg mb-1">{project.title}</h3>
+                <p className="text-sm text-gray-400 mb-2">{project.description}</p>
+                <div className="flex justify-between items-center mb-3">
+                  <Badge 
+                    className={`text-white text-xs ${
+                      project.category === "Digital Art" ? "bg-purple-600" :
+                      project.category === "Web Design" ? "bg-blue-600" :
+                      project.category === "Branding" ? "bg-teal-600" :
+                      project.category === "Photography" ? "bg-green-600" :
+                      "bg-gray-600"
+                    }`}
+                  >
+                    {project.category}
+                  </Badge>
+                  <div className="flex items-center text-gray-400">
+                    <Heart className="w-4 h-4 mr-1" />
+                    <span>{project.likes}</span>
+                  </div>
+                </div>
                 <Button
                   size="sm"
                   onClick={() => handleAnalyzeProject(project)}
-                  className="btn-gradient text-white shadow-lg"
+                  className="w-full bg-[#2e2e5e] text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-600"
                 >
-                  <Eye className="w-4 h-4 mr-1" />
-                  Analyze
+                  <BarChart3 className="w-4 h-4 mr-2" /> Get AI Feedback
                 </Button>
-              </div>
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{project.title}</h3>
-              <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-              <div className="flex items-center justify-between mb-3">
-                <Badge 
-                  variant="secondary" 
-                  className={`text-xs bg-${getCategoryColor(project.category || "")}-100 text-${getCategoryColor(project.category || "")}-800`}
-                >
-                  {project.category}
-                </Badge>
-                <div className="flex items-center text-gray-500">
-                  <Heart className="w-4 h-4 mr-1" />
-                  <span>{project.likes}</span>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleAnalyzeProject(project)}
-                className="w-full text-purple-600 hover:text-purple-800 border-purple-200 hover:border-purple-400"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Get AI Feedback
-              </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
-      {/* AI Tools Panel */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Available AI Tools</h3>
-        <div className="grid md:grid-cols-4 gap-4">
+      {/* AI Tools Section */}
+      <div className="rounded-2xl bg-[#1c1c3a] p-6 shadow-inner">
+        <h3 className="text-2xl font-semibold mb-6 text-white">Available AI Tools</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {aiTools.map((tool, index) => (
-            <Card key={index} className="text-center card-hover cursor-pointer">
-              <CardContent className="p-4">
-                <div className={`w-12 h-12 bg-${tool.color}-100 rounded-full flex items-center justify-center mx-auto mb-3`}>
-                  <tool.icon className={`text-${tool.color}-600 w-6 h-6`} />
+            <Card key={index} className="bg-[#2a2a4d] text-white p-4 rounded-xl hover:scale-105 transition-transform duration-300">
+              <CardContent className="flex flex-col items-center text-center">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                  tool.color === "purple" ? "bg-purple-500" :
+                  tool.color === "blue" ? "bg-blue-500" :
+                  tool.color === "teal" ? "bg-teal-500" :
+                  tool.color === "yellow" ? "bg-yellow-500" :
+                  "bg-gray-500"
+                }`}>
+                  <tool.icon className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="font-medium text-gray-900">{tool.title}</h4>
-                <p className="text-sm text-gray-600 mt-1">{tool.description}</p>
+                <h4 className="font-semibold text-lg">{tool.title}</h4>
+                <p className="text-sm text-gray-300 mt-1">{tool.description}</p>
               </CardContent>
             </Card>
           ))}
